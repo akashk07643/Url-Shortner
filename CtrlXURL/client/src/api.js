@@ -1,0 +1,34 @@
+const API = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+const BACKEND_ORIGIN = API.replace(/\/api\/?$/, '');
+
+export const buildShortUrl = (shortCode) => `${BACKEND_ORIGIN}/api/url/${shortCode}`;
+
+const request = async (endpoint, options = {}) => {
+  const res = await fetch(`${API}${endpoint}`, {
+    credentials: 'include',
+    headers: { 'Content-Type': 'application/json' },
+    ...options,
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.message || 'Something went wrong');
+  return data;
+};
+
+export const authAPI = {
+  register: (body) => request('/auth/register', { method: 'POST', body: JSON.stringify(body) }),
+  login: (body) => request('/auth/login', { method: 'POST', body: JSON.stringify(body) }),
+  logout: () => request('/auth/logout', { method: 'POST' }),
+  profile: () => request('/auth/profile'),
+};
+
+export const urlAPI = {
+  create: (body) => request('/url/create', { method: 'POST', body: JSON.stringify(body) }),
+  getAll: (page = 1, search = '') => request(`/url/my-urls?page=${page}&search=${encodeURIComponent(search)}`),
+  getStats: () => request('/url/dashboard'),
+  delete: (id) => request(`/url/${id}`, { method: 'DELETE' }),
+  analytics: (id) => request(`/url/${id}/analytics`),
+};
+
+export const contactAPI = {
+  send: (body) => request('/contact', { method: 'POST', body: JSON.stringify(body) }),
+};
